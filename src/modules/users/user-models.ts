@@ -1,8 +1,9 @@
 import { Schema, model } from "mongoose";
 import validator from "validator";
-
+import constants from "../../constant";
 import { ObjectId } from "mongoose";
-
+const { errorMsgs } = constants;
+const { emailError, ageError } = errorMsgs;
 export interface UserSchemaType {
   name: string;
   email: string;
@@ -31,7 +32,7 @@ const userSchema = new Schema<UserSchemaType>(
       lowercase: true,
       validate(value: string) {
         if (!validator.isEmail(value)) {
-          throw new Error("emailError");
+          throw new Error(emailError);
         }
       },
     },
@@ -45,7 +46,7 @@ const userSchema = new Schema<UserSchemaType>(
       default: 0,
       validate(value: number) {
         if (value < 0) {
-          throw new Error("ageError");
+          throw new Error(ageError);
         }
       },
     },

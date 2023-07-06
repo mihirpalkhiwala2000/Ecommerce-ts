@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = require("mongoose");
 var validator_1 = require("validator");
+var constant_1 = require("../../constant");
+var errorMsgs = constant_1.default.errorMsgs;
+var emailError = errorMsgs.emailError, ageError = errorMsgs.ageError;
 var userSchema = new mongoose_1.Schema({
     name: {
         type: String,
@@ -16,7 +19,7 @@ var userSchema = new mongoose_1.Schema({
         lowercase: true,
         validate: function (value) {
             if (!validator_1.default.isEmail(value)) {
-                throw new Error("emailError");
+                throw new Error(emailError);
             }
         },
     },
@@ -30,7 +33,7 @@ var userSchema = new mongoose_1.Schema({
         default: 0,
         validate: function (value) {
             if (value < 0) {
-                throw new Error("ageError");
+                throw new Error(ageError);
             }
         },
     },
