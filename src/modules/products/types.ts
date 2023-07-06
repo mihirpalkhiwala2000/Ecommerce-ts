@@ -1,6 +1,3 @@
-import { ObjectId } from "mongoose";
-import { ReqBodyType } from "../../utils/types";
-
 export interface QueryType {
   available?: string;
   sortBy?: string;

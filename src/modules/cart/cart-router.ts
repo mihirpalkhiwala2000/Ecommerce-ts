@@ -3,10 +3,10 @@ import { Request, Response } from "express";
 import { auth } from "../../middlware/auth";
 import constants from "../../constant";
 import { deleteProductFromCart, viewCart, addToCart } from "./cart-controller";
+import { sendResponse } from "../../utils/resUtil";
 const { successMsgs, errorMsgs, statusCodes } = constants;
 const { success } = successMsgs;
 const { serverError, noProductError } = errorMsgs;
-const { createdC, badRequestC, notFoundC, serverErrorC } = statusCodes;
 
 const cartRouter = express.Router();
 export default cartRouter;
@@ -23,9 +23,17 @@ cartRouter.get("/viewcart", auth, async (req: Request, res: Response) => {
         totalQuant = totalQuant + productsArray[i].quantity;
       }
     }
-    res.send({ "Total Quantity": totalQuant, data: productsArray });
+
+    sendResponse(
+      res,
+      {
+        "Total Quantity": totalQuant,
+        data: productsArray,
+      },
+      statusCodes.success
+    );
   } catch (e) {
-    res.status(serverErrorC).send(serverError);
+    sendResponse(res, serverError, statusCodes.serverError);
   }
 });
 
@@ -37,10 +45,9 @@ cartRouter.post("/:id", auth, async (req: Request, res: Response) => {
     const _id = req.params.id;
 
     const product = await addToCart(_id, user, quantity);
-
-    res.status(createdC).send({ data: product, message: success });
+    sendResponse(res, { data: product, message: success }, statusCodes.created);
   } catch (e: any) {
-    res.status(badRequestC).send(e.message);
+    sendResponse(res, e.message, statusCodes.badRequest);
   }
 });
 
@@ -53,11 +60,11 @@ cartRouter.delete(
       const product = await deleteProductFromCart(req.params.id, user._id);
 
       if (!product) {
-        return res.status(notFoundC).send(noProductError);
+        return sendResponse(res, noProductError, statusCodes.notFound);
       }
-      res.send({ data: product });
+      sendResponse(res, { data: product }, statusCodes.success);
     } catch (e) {
-      res.status(serverErrorC).send(serverError);
+      sendResponse(res, serverError, statusCodes.serverError);
     }
   }
 );

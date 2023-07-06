@@ -1,4 +1,4 @@
-const successMsgs = {
+export const successMsgs = {
   success: "Successful",
   successfulLogout: "You have successfully Logged out",
   created: "Created successfully",
@@ -6,7 +6,7 @@ const successMsgs = {
   connected: "Connected Successfully",
 };
 
-const errorMsgs = {
+export const errorMsgs = {
   badRequest: "Invalid request. Please try again!",
   serverError: "There is an internal server error.",
   unauthorized: "Access denied, please login first",
@@ -23,13 +23,13 @@ const errorMsgs = {
   invalidFields:
     "Certain input fields cannot be modified. Only name,age, email and password",
 };
-const statusCodes = {
-  successC: 200,
-  createdC: 201,
-  badRequestC: 400,
-  unauthorizedC: 401,
-  notFoundC: 404,
-  serverErrorC: 500,
+export const statusCodes = {
+  success: 200,
+  created: 201,
+  badRequest: 400,
+  unauthorized: 401,
+  notFound: 404,
+  serverError: 500,
 };
 export default {
   successMsgs,

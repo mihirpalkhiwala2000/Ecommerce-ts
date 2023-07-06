@@ -8,10 +8,10 @@ import {
   displayMyProduct,
   displayProduct,
 } from "./products-controller";
+import { sendResponse } from "../../utils/resUtil";
 const { successMsgs, errorMsgs, statusCodes } = constants;
 const { success } = successMsgs;
 const { badRequest, serverError, noProductError } = errorMsgs;
-const { createdC, badRequestC, notFoundC, serverErrorC } = statusCodes;
 
 const productRouter = express.Router();
 export default productRouter;
@@ -22,9 +22,10 @@ productRouter.post("", adminAuth, async (req: Request, res: Response) => {
     const owner = user._id;
     const product = await createProduct(req.body, owner);
     delete req.body.user;
-    res.status(createdC).send({ data: product, message: success });
+
+    sendResponse(res, { data: product, message: success }, statusCodes.created);
   } catch (e: any) {
-    res.status(badRequestC).send(badRequest);
+    sendResponse(res, badRequest, statusCodes.badRequest);
   }
 });
 
@@ -32,9 +33,9 @@ productRouter.get("", auth, async (req: Request, res: Response) => {
   try {
     const query: any = req.query;
     const products = await displayProduct(query);
-    res.send({ data: products });
+    sendResponse(res, { data: products }, statusCodes.success);
   } catch (e) {
-    res.status(serverErrorC).send(serverError);
+    sendResponse(res, serverError, statusCodes.serverError);
   }
 });
 
@@ -46,9 +47,9 @@ productRouter.get(
       const query: any = req.query;
       const { user } = req.body;
       const products = await displayMyProduct(query, user._id);
-      res.send({ data: products });
+      sendResponse(res, { data: products }, statusCodes.success);
     } catch (e) {
-      res.status(serverErrorC).send(serverError);
+      sendResponse(res, serverError, statusCodes.serverError);
     }
   }
 );
@@ -62,15 +63,11 @@ productRouter.delete(
       const product = await deleteProduct(req.params.id, user._id);
 
       if (!product) {
-        return res.status(notFoundC).send(noProductError);
+        return sendResponse(res, noProductError, statusCodes.notFound);
       }
-      res.send({ data: product });
+      sendResponse(res, { data: product }, statusCodes.success);
     } catch (e) {
-      console.log(
-        "🚀 ~ file: products-router.ts:101 ~ productRouter.delete ~ e:",
-        e
-      );
-      res.status(serverErrorC).send(serverError);
+      sendResponse(res, serverError, statusCodes.serverError);
     }
   }
 );

@@ -1,9 +1,9 @@
 import * as jwt from "jsonwebtoken";
 import User, { UserSchemaType } from "../modules/users/user-models";
 
-async function generate(user: UserSchemaType): Promise<string> {
+async function generateToken(user: UserSchemaType): Promise<string> {
   const token = jwt.sign(
-    { _id: user._id.toString() },
+    { _id: user._id?.toString() },
     process.env.JWT_CODE as string
   );
 
@@ -13,4 +13,4 @@ async function generate(user: UserSchemaType): Promise<string> {
   return token;
 }
 
-export default generate;
+export default generateToken;

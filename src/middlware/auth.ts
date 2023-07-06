@@ -3,9 +3,10 @@ import User from "../modules/users/user-models";
 import constants from "../constant";
 const { errorMsgs, statusCodes } = constants;
 const { unauthorized, superadminError, adminError } = errorMsgs;
-const { unauthorizedC } = statusCodes;
+
 import { Request, Response, NextFunction } from "express";
 import { RoleEnum } from "../modules/users/enums";
+import { sendResponse } from "../utils/resUtil";
 
 export const auth = async (
   req: Request,
@@ -32,7 +33,7 @@ export const auth = async (
     req.body.user = user;
     next();
   } catch (e) {
-    res.status(unauthorizedC).send(unauthorized);
+    sendResponse(res, unauthorized, statusCodes.unauthorized);
   }
 };
 
@@ -65,7 +66,7 @@ export const superAdminAuth = async (
     req.body.user = user;
     next();
   } catch (e: any) {
-    res.status(unauthorizedC).send(e.message);
+    sendResponse(res, unauthorized, statusCodes.unauthorized);
   }
 };
 
@@ -98,6 +99,6 @@ export const adminAuth = async (
     req.body.user = user;
     next();
   } catch (e: any) {
-    res.status(unauthorizedC).send(e.message);
+    sendResponse(res, unauthorized, statusCodes.unauthorized);
   }
 };

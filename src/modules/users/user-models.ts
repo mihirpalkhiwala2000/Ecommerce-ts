@@ -8,12 +8,12 @@ export interface UserSchemaType {
   name: string;
   email: string;
   password: string;
-  age: number;
+  age?: number;
   role: number;
-  tokens: any;
-  _id: ObjectId;
-  createdAt: NativeDate;
-  updatedAt: NativeDate;
+  tokens?: any;
+  _id?: ObjectId;
+  createdAt?: NativeDate;
+  updatedAt?: NativeDate;
 }
 
 const userSchema = new Schema<UserSchemaType>(

@@ -1,47 +1,46 @@
 import User, { UserSchemaType } from "./user-models";
-import * as bcrypt from "bcryptjs";
-import generate from "../../utils/generateTokensUtils";
+import generateToken from "../../utils/generateTokensUtils";
 import findByCredentials from "../../utils/findByCredentials";
 import constants from "../../constant";
 import Cart from "../cart/cart-model";
 import { CreateUserReturnType, ReqBodyType } from "../../utils/types";
+import passwordEncryption from "../../utils/passwordencryption";
 
 const { errorMsgs } = constants;
 const { emailLoginError } = errorMsgs;
 
-export const createUser = async (
-  userData: Request
-): Promise<CreateUserReturnType> => {
+export const createUser = async (userData: UserSchemaType): Promise<any> => {
   superAdmin();
 
-  const user = new User(userData);
-  const { password } = user;
-  if (user.isModified("password")) {
-    user.password = await bcrypt.hash(password, 8);
+  const { password } = userData;
+  if (password) {
+    userData.password = await passwordEncryption(password);
   }
-  await User.create(user);
-  const token = await generate(user);
+  const createdUser = await User.create(userData);
+
+  const token = await generateToken(createdUser);
   const products: string[] = [];
-  await Cart.create({ user: user._id, products });
-  return { user, token };
+  await Cart.create({ user: createdUser._id, products });
+
+  return { createdUser, token };
 };
 
-const superAdmin = async (): Promise<undefined> => {
-  const superAd = await User.findOne({ role: 1 });
+const superAdmin = async (): Promise<void> => {
+  const checkSuperAdmin = await User.findOne({ role: 1 });
 
-  if (!superAd) {
-    const createsuperAd = new User({
-      name: process.env.SA_NAME,
-      email: process.env.SA_EMAIL,
-      password: process.env.SA_PASSWORD,
-      role: parseInt(process.env.SA_ROLE as string),
-    });
+  if (!checkSuperAdmin) {
+    const createSuperAdmin: UserSchemaType = {
+      name: process.env.SUPERADMIN_NAME as string,
+      email: process.env.SUPERADMIN_EMAIL as string,
+      password: process.env.SUPERADMIN_PASSWORD as string,
+      role: parseInt(process.env.SUPERADMIN_ROLE as string),
+    };
 
-    const password = await bcrypt.hash(createsuperAd.password, 8);
-    createsuperAd.password = password;
-    await User.create(createsuperAd);
+    const password = await passwordEncryption(createSuperAdmin.password);
+    createSuperAdmin.password = password;
+    const createdUser = await User.create(createSuperAdmin);
 
-    const token = await generate(createsuperAd);
+    const token = await generateToken(createdUser);
   }
 };
 
@@ -50,7 +49,7 @@ export const loginUser = async (
   password: string
 ): Promise<CreateUserReturnType> => {
   const user: UserSchemaType = await findByCredentials(email, password);
-  const token = await generate(user);
+  const token = await generateToken(user);
   return { user, token };
 };
 
@@ -89,17 +88,21 @@ export const validateUpdates = async (updates: string[]): Promise<Boolean> => {
 
 export const updateUser = async (
   user: UserSchemaType,
-  reqBody: ReqBodyType
+  UpdateData: ReqBodyType
 ): Promise<UserSchemaType | null> => {
-  let { password } = reqBody;
+  let { password } = UpdateData;
 
   if (password) {
-    reqBody["password"] = await bcrypt.hash(password, 8);
+    UpdateData["password"] = await passwordEncryption(password);
   }
 
-  const retuser = User.findOneAndUpdate({ email: user.email }, reqBody, {
+  const retuser = User.findOneAndUpdate({ email: user.email }, UpdateData, {
     new: true,
   });
 
   return retuser;
+};
+
+export const logOut = async (userData: UserSchemaType): Promise<void> => {
+  await User.findOneAndUpdate({ _id: userData._id }, { tokens: [] });
 };
