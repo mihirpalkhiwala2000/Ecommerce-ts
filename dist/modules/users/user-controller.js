@@ -126,6 +126,9 @@ var deleteUser = function (reqUser_id) { return __awaiter(void 0, void 0, void 0
                 })];
             case 1:
                 _a.sent();
+                return [4 /*yield*/, cart_model_1.default.deleteOne({ user: reqUser_id })];
+            case 2:
+                _a.sent();
                 return [2 /*return*/];
         }
     });
@@ -138,17 +141,18 @@ var deleteUserByAdmin = function (email) { return __awaiter(void 0, void 0, void
             case 0: return [4 /*yield*/, user_models_1.default.findOne({ email: email })];
             case 1:
                 user = _a.sent();
-                if (!user) return [3 /*break*/, 3];
+                if (!user) return [3 /*break*/, 4];
                 return [4 /*yield*/, user_models_1.default.findOneAndDelete({
                         email: email,
                     })];
             case 2:
                 deletedUser = _a.sent();
-                return [3 /*break*/, 4];
-            case 3: throw new Error(emailLoginError);
-            case 4: 
-            // await Task.deleteMany({ owner: reqUser_id });
-            return [2 /*return*/, user];
+                return [4 /*yield*/, cart_model_1.default.deleteOne({ user: user._id })];
+            case 3:
+                _a.sent();
+                return [3 /*break*/, 5];
+            case 4: throw new Error(emailLoginError);
+            case 5: return [2 /*return*/, user];
         }
     });
 }); };
@@ -177,10 +181,10 @@ var updateUser = function (user, reqBody) { return __awaiter(void 0, void 0, voi
             case 1:
                 _a[_b] = _c.sent();
                 _c.label = 2;
-            case 2: return [4 /*yield*/, user_models_1.default.findOneAndUpdate({ email: user.email }, reqBody)];
-            case 3:
-                _c.sent();
-                retuser = user_models_1.default.findOne({ email: user.email });
+            case 2:
+                retuser = user_models_1.default.findOneAndUpdate({ email: user.email }, reqBody, {
+                    new: true,
+                });
                 return [2 /*return*/, retuser];
         }
     });

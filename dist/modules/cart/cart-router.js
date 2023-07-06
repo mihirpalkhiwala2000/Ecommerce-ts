@@ -39,67 +39,77 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
 var auth_1 = require("../../middlware/auth");
 var constant_1 = require("../../constant");
-var products_controller_1 = require("./products-controller");
+var cart_controller_1 = require("./cart-controller");
 var successMsgs = constant_1.default.successMsgs, errorMsgs = constant_1.default.errorMsgs, statusCodes = constant_1.default.statusCodes;
 var success = successMsgs.success;
-var badRequest = errorMsgs.badRequest, serverError = errorMsgs.serverError, noProductError = errorMsgs.noProductError;
+var serverError = errorMsgs.serverError, noProductError = errorMsgs.noProductError;
 var createdC = statusCodes.createdC, badRequestC = statusCodes.badRequestC, notFoundC = statusCodes.notFoundC, serverErrorC = statusCodes.serverErrorC;
-var productRouter = express.Router();
-exports.default = productRouter;
-productRouter.post("", auth_1.adminAuth, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var user, owner, product, e_1;
+var cartRouter = express.Router();
+exports.default = cartRouter;
+cartRouter.get("/viewcart", auth_1.auth, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var user, cartproducts, productsArray, length_1, totalQuant, i, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
                 user = req.body.user;
-                owner = user._id;
-                return [4 /*yield*/, (0, products_controller_1.createProduct)(req.body, owner)];
+                return [4 /*yield*/, (0, cart_controller_1.viewCart)(user._id)];
             case 1:
-                product = _a.sent();
-                delete req.body.user;
-                res.status(createdC).send({ data: product, message: success });
+                cartproducts = _a.sent();
+                productsArray = cartproducts === null || cartproducts === void 0 ? void 0 : cartproducts.products;
+                length_1 = productsArray === null || productsArray === void 0 ? void 0 : productsArray.length;
+                totalQuant = 0;
+                if (length_1) {
+                    for (i = 0; i < length_1; i++) {
+                        totalQuant = totalQuant + productsArray[i].quantity;
+                    }
+                }
+                res.send({ "Total Quantity": totalQuant, data: productsArray });
                 return [3 /*break*/, 3];
             case 2:
                 e_1 = _a.sent();
-                res.status(badRequestC).send(badRequest);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); });
-productRouter.get("", auth_1.auth, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var query, products, e_2;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                query = req.query;
-                return [4 /*yield*/, (0, products_controller_1.displayProduct)(query)];
-            case 1:
-                products = _a.sent();
-                res.send({ data: products });
-                return [3 /*break*/, 3];
-            case 2:
-                e_2 = _a.sent();
                 res.status(serverErrorC).send(serverError);
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];
         }
     });
 }); });
-productRouter.get("/myproducts", auth_1.adminAuth, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var query, user, products, e_3;
+cartRouter.post("/:id", auth_1.auth, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var user, quantity, _id, product, e_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                query = req.query;
                 user = req.body.user;
-                return [4 /*yield*/, (0, products_controller_1.displayMyProduct)(query, user._id)];
+                quantity = req.body.quantity;
+                _id = req.params.id;
+                return [4 /*yield*/, (0, cart_controller_1.addToCart)(_id, user, quantity)];
             case 1:
-                products = _a.sent();
-                res.send({ data: products });
+                product = _a.sent();
+                res.status(createdC).send({ data: product, message: success });
+                return [3 /*break*/, 3];
+            case 2:
+                e_2 = _a.sent();
+                res.status(badRequestC).send(e_2.message);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); });
+cartRouter.delete("/deleteproductfromcart/:id", auth_1.auth, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var user, product, e_3;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                user = req.body.user;
+                return [4 /*yield*/, (0, cart_controller_1.deleteProductFromCart)(req.params.id, user._id)];
+            case 1:
+                product = _a.sent();
+                if (!product) {
+                    return [2 /*return*/, res.status(notFoundC).send(noProductError)];
+                }
+                res.send({ data: product });
                 return [3 /*break*/, 3];
             case 2:
                 e_3 = _a.sent();
@@ -109,28 +119,4 @@ productRouter.get("/myproducts", auth_1.adminAuth, function (req, res) { return 
         }
     });
 }); });
-productRouter.delete("/deleteproduct/:id", auth_1.adminAuth, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var user, product, e_4;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                user = req.body.user;
-                return [4 /*yield*/, (0, products_controller_1.deleteProduct)(req.params.id, user._id)];
-            case 1:
-                product = _a.sent();
-                if (!product) {
-                    return [2 /*return*/, res.status(notFoundC).send(noProductError)];
-                }
-                res.send({ data: product });
-                return [3 /*break*/, 3];
-            case 2:
-                e_4 = _a.sent();
-                console.log("🚀 ~ file: products-router.ts:101 ~ productRouter.delete ~ e:", e_4);
-                res.status(serverErrorC).send(serverError);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); });
-//# sourceMappingURL=products-router.js.map
+//# sourceMappingURL=cart-router.js.map

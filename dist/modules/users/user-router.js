@@ -46,7 +46,7 @@ var userRouter = express.Router();
 exports.default = userRouter;
 var successMsgs = constant_1.default.successMsgs, errorMsgs = constant_1.default.errorMsgs, statusCodes = constant_1.default.statusCodes;
 var successfulLogout = successMsgs.successfulLogout, created = successMsgs.created, login = successMsgs.login;
-var invalidFields = errorMsgs.invalidFields, badRequest = errorMsgs.badRequest, serverError = errorMsgs.serverError, emailError = errorMsgs.emailError, emailLoginError = errorMsgs.emailLoginError, emailusedError = errorMsgs.emailusedError;
+var invalidFields = errorMsgs.invalidFields, serverError = errorMsgs.serverError;
 var createdC = statusCodes.createdC, badRequestC = statusCodes.badRequestC, serverErrorC = statusCodes.serverErrorC;
 userRouter.post("", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var _a, user, token, e_1;
@@ -110,7 +110,6 @@ userRouter.post("/login", function (req, res) { return __awaiter(void 0, void 0,
                 return [3 /*break*/, 3];
             case 2:
                 error_1 = _c.sent();
-                console.log("🚀 ~ file: user-router.ts:69 ~ userRouter.post ~ error:", error_1);
                 res.status(badRequestC).send(error_1.message);
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];
@@ -153,6 +152,7 @@ userRouter.patch("/me", auth_1.auth, function (req, res) { return __awaiter(void
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                _a.trys.push([0, 3, , 4]);
                 updates = Object.keys(req.body.data);
                 return [4 /*yield*/, (0, user_controller_1.validateUpdates)(updates)];
             case 1:
@@ -160,20 +160,17 @@ userRouter.patch("/me", auth_1.auth, function (req, res) { return __awaiter(void
                 if (!isValidOperation) {
                     return [2 /*return*/, res.status(badRequestC).send(invalidFields)];
                 }
-                _a.label = 2;
-            case 2:
-                _a.trys.push([2, 4, , 5]);
                 user = req.body.user;
                 return [4 /*yield*/, (0, user_controller_1.updateUser)(user, req.body.data)];
-            case 3:
+            case 2:
                 retuser = _a.sent();
                 res.send({ data: retuser });
-                return [3 /*break*/, 5];
-            case 4:
+                return [3 /*break*/, 4];
+            case 3:
                 e_4 = _a.sent();
                 res.status(badRequestC).send(e_4.message);
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); });
@@ -198,19 +195,19 @@ userRouter.delete("/me", auth_1.auth, function (req, res) { return __awaiter(voi
     });
 }); });
 userRouter.delete("/deleteuser", auth_1.adminAuth, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var email, deletedUser, e_6;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var _a, email, _id, deletedUser, e_6;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                _a.trys.push([0, 2, , 3]);
-                email = req.body.email;
+                _b.trys.push([0, 2, , 3]);
+                _a = req.body, email = _a.email, _id = _a._id;
                 return [4 /*yield*/, (0, user_controller_1.deleteUserByAdmin)(email)];
             case 1:
-                deletedUser = _a.sent();
+                deletedUser = _b.sent();
                 res.send({ "following user deleted": deletedUser });
                 return [3 /*break*/, 3];
             case 2:
-                e_6 = _a.sent();
+                e_6 = _b.sent();
                 res.status(serverErrorC).send(e_6.message);
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];

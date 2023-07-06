@@ -1,6 +1,4 @@
 import * as jwt from "jsonwebtoken";
-import * as dotenv from "dotenv";
-dotenv.config();
 import User, { UserSchemaType } from "../modules/users/user-models";
 
 async function generate(user: UserSchemaType): Promise<string> {

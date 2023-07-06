@@ -12,20 +12,14 @@ import constants from "../../constant";
 import { auth, superAdminAuth, adminAuth } from "../../middlware/auth";
 import { Request, Response } from "express";
 import { RoleEnum } from "./enums";
+import { Error } from "mongoose";
 
 const userRouter = express.Router();
 export default userRouter;
 
 const { successMsgs, errorMsgs, statusCodes } = constants;
 const { successfulLogout, created, login } = successMsgs;
-const {
-  invalidFields,
-  badRequest,
-  serverError,
-  emailError,
-  emailLoginError,
-  emailusedError,
-} = errorMsgs;
+const { invalidFields, serverError } = errorMsgs;
 const { createdC, badRequestC, serverErrorC } = statusCodes;
 
 userRouter.post("", async (req: Request, res: Response) => {
@@ -60,16 +54,12 @@ userRouter.post(
   }
 );
 
-userRouter.post("/login", async (req, res) => {
+userRouter.post("/login", async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const { user, token } = await loginUser(email, password);
     res.send({ user: user, token, message: login });
   } catch (error: any) {
-    console.log(
-      "🚀 ~ file: user-router.ts:69 ~ userRouter.post ~ error:",
-      error
-    );
     res.status(badRequestC).send(error.message);
   }
 });
@@ -95,14 +85,13 @@ userRouter.get("/me", auth, async (req, res) => {
 });
 
 userRouter.patch("/me", auth, async (req, res) => {
-  const updates = Object.keys(req.body.data);
-
-  const isValidOperation = await validateUpdates(updates);
-
-  if (!isValidOperation) {
-    return res.status(badRequestC).send(invalidFields);
-  }
   try {
+    const updates = Object.keys(req.body.data);
+    const isValidOperation = await validateUpdates(updates);
+
+    if (!isValidOperation) {
+      return res.status(badRequestC).send(invalidFields);
+    }
     const { user } = req.body;
 
     const retuser = await updateUser(user, req.body.data);
@@ -125,7 +114,7 @@ userRouter.delete("/me", auth, async (req, res) => {
 
 userRouter.delete("/deleteuser", adminAuth, async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, _id } = req.body;
     const deletedUser = await deleteUserByAdmin(email);
     res.send({ "following user deleted": deletedUser });
   } catch (e: any) {

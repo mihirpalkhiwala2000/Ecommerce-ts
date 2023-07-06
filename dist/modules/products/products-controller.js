@@ -47,12 +47,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProductFromCart = exports.deleteProduct = exports.viewCart = exports.addToCart = exports.displayMyProduct = exports.displayProduct = exports.createProduct = void 0;
-var cart_model_1 = require("../cart/cart-model");
+exports.deleteProduct = exports.displayMyProduct = exports.displayProduct = exports.createProduct = void 0;
 var products_model_1 = require("./products-model");
-var constant_1 = require("../../constant");
-var errorMsgs = constant_1.default.errorMsgs;
-var noProductError = errorMsgs.noProductError, outOfStock = errorMsgs.outOfStock;
 var createProduct = function (reqBody, owner) { return __awaiter(void 0, void 0, void 0, function () {
     var product;
     return __generator(this, function (_a) {
@@ -60,7 +56,7 @@ var createProduct = function (reqBody, owner) { return __awaiter(void 0, void 0,
             case 0: return [4 /*yield*/, products_model_1.default.create(__assign(__assign({}, reqBody), { owner: owner }))];
             case 1:
                 product = _a.sent();
-                return [2 /*return*/, { product: product }];
+                return [2 /*return*/, product];
         }
     });
 }); };
@@ -129,41 +125,6 @@ var displayMyProduct = function (_a, userId) {
     });
 };
 exports.displayMyProduct = displayMyProduct;
-var addToCart = function (_id, reqUser, quantity) { return __awaiter(void 0, void 0, void 0, function () {
-    var product, cart;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, products_model_1.default.findOne({ _id: _id })];
-            case 1:
-                product = _a.sent();
-                if (!product) {
-                    throw new Error(noProductError);
-                }
-                if (!product.available) {
-                    throw new Error(outOfStock);
-                }
-                return [4 /*yield*/, cart_model_1.default.findOneAndUpdate({ user: reqUser._id }, {
-                        $push: { products: { productId: product._id, quantity: quantity } },
-                    }, { new: true })];
-            case 2:
-                cart = _a.sent();
-                return [2 /*return*/, cart];
-        }
-    });
-}); };
-exports.addToCart = addToCart;
-var viewCart = function (userId) { return __awaiter(void 0, void 0, void 0, function () {
-    var products;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, cart_model_1.default.findOne({ user: userId })];
-            case 1:
-                products = _a.sent();
-                return [2 /*return*/, products];
-        }
-    });
-}); };
-exports.viewCart = viewCart;
 var deleteProduct = function (id, user_Id) { return __awaiter(void 0, void 0, void 0, function () {
     var product;
     return __generator(this, function (_a) {
@@ -179,19 +140,4 @@ var deleteProduct = function (id, user_Id) { return __awaiter(void 0, void 0, vo
     });
 }); };
 exports.deleteProduct = deleteProduct;
-var deleteProductFromCart = function (id, user_Id) { return __awaiter(void 0, void 0, void 0, function () {
-    var product;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, cart_model_1.default.findOneAndUpdate({ user: user_Id }, { $pull: { products: { productId: id } } }, {
-                    safe: true,
-                    new: true,
-                })];
-            case 1:
-                product = _a.sent();
-                return [2 /*return*/, product];
-        }
-    });
-}); };
-exports.deleteProductFromCart = deleteProductFromCart;
 //# sourceMappingURL=products-controller.js.map

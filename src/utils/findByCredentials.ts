@@ -3,7 +3,8 @@ import * as bcrypt from "bcryptjs";
 import constant from "../constant";
 const { errorMsgs } = constant;
 const { passError, emailLoginError } = errorMsgs;
-let findByCredentials = async (
+
+const findByCredentials = async (
   email: string,
   password: string
 ): Promise<UserSchemaType> => {

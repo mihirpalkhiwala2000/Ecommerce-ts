@@ -3,12 +3,15 @@ import * as bcrypt from "bcryptjs";
 import generate from "../../utils/generateTokensUtils";
 import findByCredentials from "../../utils/findByCredentials";
 import constants from "../../constant";
-import { RoleEnum } from "./enums";
 import Cart from "../cart/cart-model";
+import { CreateUserReturnType, ReqBodyType } from "../../utils/types";
+
 const { errorMsgs } = constants;
 const { emailLoginError } = errorMsgs;
 
-export const createUser = async (userData: Request) => {
+export const createUser = async (
+  userData: Request
+): Promise<CreateUserReturnType> => {
   superAdmin();
 
   const user = new User(userData);
@@ -23,7 +26,7 @@ export const createUser = async (userData: Request) => {
   return { user, token };
 };
 
-const superAdmin = async () => {
+const superAdmin = async (): Promise<undefined> => {
   const superAd = await User.findOne({ role: 1 });
 
   if (!superAd) {
@@ -42,33 +45,39 @@ const superAdmin = async () => {
   }
 };
 
-export const loginUser = async (email: string, password: string) => {
+export const loginUser = async (
+  email: string,
+  password: string
+): Promise<CreateUserReturnType> => {
   const user: UserSchemaType = await findByCredentials(email, password);
   const token = await generate(user);
   return { user, token };
 };
 
-export const deleteUser = async (reqUser_id: string) => {
+export const deleteUser = async (reqUser_id: string): Promise<undefined> => {
   await User.findOneAndDelete({
     _id: reqUser_id,
   });
-  // await Task.deleteMany({ owner: reqUser_id });
+  await Cart.deleteOne({ user: reqUser_id });
 };
 
-export const deleteUserByAdmin = async (email: string) => {
+export const deleteUserByAdmin = async (
+  email: string
+): Promise<UserSchemaType> => {
   const user = await User.findOne({ email });
   if (user) {
     const deletedUser = await User.findOneAndDelete({
       email,
     });
+    await Cart.deleteOne({ user: user._id });
   } else {
     throw new Error(emailLoginError);
   }
-  // await Task.deleteMany({ owner: reqUser_id });
+
   return user;
 };
 
-export const validateUpdates = async (updates: string[]) => {
+export const validateUpdates = async (updates: string[]): Promise<Boolean> => {
   const allowedUpdates = ["name", "email", "password", "age"];
 
   const isValidOperation = updates.every((update: string) => {
@@ -78,14 +87,19 @@ export const validateUpdates = async (updates: string[]) => {
   return isValidOperation;
 };
 
-export const updateUser = async (user: any, reqBody: any) => {
+export const updateUser = async (
+  user: UserSchemaType,
+  reqBody: ReqBodyType
+): Promise<UserSchemaType | null> => {
   let { password } = reqBody;
 
   if (password) {
     reqBody["password"] = await bcrypt.hash(password, 8);
   }
 
-  await User.findOneAndUpdate({ email: user.email }, reqBody);
-  const retuser = User.findOne({ email: user.email });
+  const retuser = User.findOneAndUpdate({ email: user.email }, reqBody, {
+    new: true,
+  });
+
   return retuser;
 };
