@@ -4,10 +4,8 @@ import { auth, superAdminAuth } from "../../middlware/auth";
 import constants from "../../constant";
 import { sendResponse } from "../../utils/resUtil";
 import { displayTotalSales, orderProcessed } from "./order-controller";
-import Order from "./order-model";
-const { successMsgs, errorMsgs, statusCodes } = constants;
+const { successMsgs, statusCodes } = constants;
 const { success } = successMsgs;
-const { serverError, noProductError, emptyCart } = errorMsgs;
 
 const orderRouter = express.Router();
 export default orderRouter;

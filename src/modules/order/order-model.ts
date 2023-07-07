@@ -1,11 +1,12 @@
-import { ObjectId, Schema, model } from "mongoose";
+import { Schema, model } from "mongoose";
 import { CartProductType } from "../cart/cart-model";
+import { PaymentEnum } from "./enums";
 
 export interface OrderSchemaType {
   userInfo: Schema.Types.ObjectId;
   products: Array<CartProductType>;
   status: number;
-  paymentMode: number;
+  paymentMode: PaymentEnum;
   totalValue: number;
   totalQuantity: number;
 }

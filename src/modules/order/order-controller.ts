@@ -1,15 +1,15 @@
 import Order, { OrderSchemaType } from "./order-model";
-import Product from "../products/products-model";
 import constant from "../../constant";
-import User, { UserSchemaType } from "../users/user-models";
 import { Error, ObjectId } from "mongoose";
 import Cart from "../cart/cart-model";
-import { RoleEnum } from "../users/enums";
 import { PaymentEnum, StatusEnum } from "./enums";
 const { errorMsgs } = constant;
 const { emptyCart } = errorMsgs;
 
-export const orderProcessed = async (id: ObjectId, paymentMode: number) => {
+export const orderProcessed = async (
+  id: ObjectId,
+  paymentMode: PaymentEnum
+): Promise<OrderSchemaType | void> => {
   const orderItems = await Cart.findOne({
     user: id,
   });
@@ -84,10 +84,19 @@ export const displayTotalSales = async () => {
       $group: {
         _id: "$admin.owner",
         totalSale: {
-          $sum: { $multiply: ["$totalPrice", "$totalQuantity"] },
+          $sum: "$totalPrice",
         },
       },
     },
+    {
+      $addFields: {
+        seller: "$_id",
+      },
+    },
+    {
+      $unset: ["_id"],
+    },
   ]);
+
   return totalValues;
 };
