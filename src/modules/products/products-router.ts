@@ -5,7 +5,6 @@ import constants from "../../constant";
 import {
   createProduct,
   deleteProduct,
-  displayMyProduct,
   displayProduct,
 } from "./products-controller";
 import { sendResponse } from "../../utils/resUtil";
@@ -19,13 +18,13 @@ export default productRouter;
 productRouter.post("", adminAuth, async (req: Request, res: Response) => {
   try {
     const { user } = req.body;
-    const owner = user._id;
+    const owner = user;
     const product = await createProduct(req.body, owner);
     delete req.body.user;
 
     sendResponse(res, { data: product, message: success }, statusCodes.created);
   } catch (e: any) {
-    sendResponse(res, badRequest, statusCodes.badRequest);
+    sendResponse(res, e.message, statusCodes.badRequest);
   }
 });
 
@@ -46,7 +45,7 @@ productRouter.get(
     try {
       const query: any = req.query;
       const { user } = req.body;
-      const products = await displayMyProduct(query, user._id);
+      const products = await displayProduct(query, user);
       sendResponse(res, { data: products }, statusCodes.success);
     } catch (e) {
       sendResponse(res, serverError, statusCodes.serverError);
@@ -59,8 +58,8 @@ productRouter.delete(
   adminAuth,
   async (req: Request, res: Response) => {
     try {
-      const { user } = req.body;
-      const product = await deleteProduct(req.params.id, user._id);
+      const user = req.body.user;
+      const product = await deleteProduct(req.params.id, user);
 
       if (!product) {
         return sendResponse(res, noProductError, statusCodes.notFound);

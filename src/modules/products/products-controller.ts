@@ -12,49 +12,19 @@ export const createProduct = async (
   return product;
 };
 
-export const displayProduct = async ({
-  limit = "5",
-  pageNo = "1",
-  sortBy,
-  available,
-}: QueryType) => {
+export const displayProduct = async (
+  { limit = "5", pageNo = "1", sortBy, available }: QueryType,
+  userId: QueryType | null = null
+) => {
   let sort: Record<string, number> = {};
   let query: any = {};
 
   if (available) {
     query = { ...query, available };
   }
-
-  var skip: number = 0;
-
-  if (sortBy) {
-    let parts: string[];
-    parts = sortBy.split(":");
-    sort[parts[0]] = parts[1] === "desc" ? -1 : 1;
+  if (userId) {
+    query = { ...query, owner: userId };
   }
-
-  skip = (parseInt(pageNo) - 1) * parseInt(limit);
-
-  const products = await Product.find(query, null, {
-    limit: parseInt(limit),
-    skip: skip,
-    sort: sort,
-  }).exec();
-
-  return products;
-};
-
-export const displayMyProduct = async (
-  { limit = "5", pageNo = "1", sortBy, available }: any,
-  userId: QueryType
-) => {
-  let sort: Record<string, number> = {};
-  let query: any = { owner: userId };
-
-  if (available) {
-    query = { ...query, available };
-  }
-
   var skip: number = 0;
 
   if (sortBy) {

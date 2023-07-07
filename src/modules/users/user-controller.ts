@@ -5,9 +5,9 @@ import constants from "../../constant";
 import Cart from "../cart/cart-model";
 import { CreateUserReturnType, ReqBodyType } from "../../utils/types";
 import passwordEncryption from "../../utils/passwordencryption";
+import { ObjectId } from "mongoose";
 
 const { errorMsgs } = constants;
-const { emailLoginError } = errorMsgs;
 
 export const createUser = async (userData: UserSchemaType): Promise<any> => {
   superAdmin();
@@ -38,9 +38,7 @@ const superAdmin = async (): Promise<void> => {
 
     const password = await passwordEncryption(createSuperAdmin.password);
     createSuperAdmin.password = password;
-    const createdUser = await User.create(createSuperAdmin);
-
-    const token = await generateToken(createdUser);
+    await User.create(createSuperAdmin);
   }
 };
 
@@ -53,6 +51,13 @@ export const loginUser = async (
   return { user, token };
 };
 
+export const readProfile = async (
+  id: ObjectId
+): Promise<UserSchemaType | null> => {
+  const profile = await User.findOne({ _id: id });
+  return profile;
+};
+
 export const deleteUser = async (reqUser_id: string): Promise<undefined> => {
   await User.findOneAndDelete({
     _id: reqUser_id,
@@ -62,20 +67,16 @@ export const deleteUser = async (reqUser_id: string): Promise<undefined> => {
 
 export const deleteUserByAdmin = async (
   email: string
-): Promise<UserSchemaType> => {
-  const user = await User.findOne({ email });
-  if (user) {
-    const deletedUser = await User.findOneAndDelete({
-      email,
-    });
-    await Cart.deleteOne({ user: user._id });
-  } else {
-    throw new Error(emailLoginError);
+): Promise<UserSchemaType | undefined> => {
+  const deletedUser = await User.findOneAndDelete({
+    email,
+  });
+
+  if (deletedUser) {
+    await Cart.findOneAndDelete({ user: deletedUser._id });
+    return deletedUser;
   }
-
-  return user;
 };
-
 export const validateUpdates = async (updates: string[]): Promise<Boolean> => {
   const allowedUpdates = ["name", "email", "password", "age"];
 
@@ -87,7 +88,7 @@ export const validateUpdates = async (updates: string[]): Promise<Boolean> => {
 };
 
 export const updateUser = async (
-  user: UserSchemaType,
+  id: UserSchemaType,
   UpdateData: ReqBodyType
 ): Promise<UserSchemaType | null> => {
   let { password } = UpdateData;
@@ -96,13 +97,13 @@ export const updateUser = async (
     UpdateData["password"] = await passwordEncryption(password);
   }
 
-  const retuser = User.findOneAndUpdate({ email: user.email }, UpdateData, {
+  const retuser = User.findOneAndUpdate({ _id: id }, UpdateData, {
     new: true,
   });
 
   return retuser;
 };
 
-export const logOut = async (userData: UserSchemaType): Promise<void> => {
-  await User.findOneAndUpdate({ _id: userData._id }, { tokens: [] });
+export const logOut = async (userId: ObjectId): Promise<void> => {
+  await User.findOneAndUpdate({ _id: userId }, { tokens: [] });
 };

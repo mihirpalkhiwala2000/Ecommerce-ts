@@ -6,41 +6,37 @@ import { deleteProductFromCart, viewCart, addToCart } from "./cart-controller";
 import { sendResponse } from "../../utils/resUtil";
 const { successMsgs, errorMsgs, statusCodes } = constants;
 const { success } = successMsgs;
-const { serverError, noProductError } = errorMsgs;
+const { serverError, noProductError, emptyCart } = errorMsgs;
 
 const cartRouter = express.Router();
 export default cartRouter;
 
-cartRouter.get("/viewcart", auth, async (req: Request, res: Response) => {
+cartRouter.get("/", auth, async (req: Request, res: Response) => {
   try {
     const { user } = req.body;
-    const cartproducts = await viewCart(user._id);
-    const productsArray = cartproducts?.products;
-    const length = productsArray?.length;
-    let totalQuant = 0;
-    if (length) {
-      for (let i = 0; i < length; i++) {
-        totalQuant = totalQuant + productsArray[i].quantity;
-      }
-    }
+    const { products, totalValues } = await viewCart(user);
 
-    sendResponse(
-      res,
-      {
-        "Total Quantity": totalQuant,
-        data: productsArray,
-      },
-      statusCodes.success
-    );
-  } catch (e) {
-    sendResponse(res, serverError, statusCodes.serverError);
+    if (totalValues.length != 0) {
+      sendResponse(
+        res,
+        {
+          totalQuantity: totalValues[0].totalQuantity,
+          totalPrice: totalValues[0].totalPrice,
+          data: products,
+        },
+        statusCodes.success
+      );
+    } else {
+      throw new Error(emptyCart);
+    }
+  } catch (e: any) {
+    sendResponse(res, e.message, statusCodes.serverError);
   }
 });
 
 cartRouter.post("/:id", auth, async (req: Request, res: Response) => {
   try {
-    const { user } = req.body;
-    const { quantity } = req.body;
+    const { user, quantity } = req.body;
 
     const _id = req.params.id;
 
@@ -52,12 +48,12 @@ cartRouter.post("/:id", auth, async (req: Request, res: Response) => {
 });
 
 cartRouter.delete(
-  "/deleteproductfromcart/:id",
+  "/removeProdut/:id",
   auth,
   async (req: Request, res: Response) => {
     try {
       const { user } = req.body;
-      const product = await deleteProductFromCart(req.params.id, user._id);
+      const product = await deleteProductFromCart(req.params.id, user);
 
       if (!product) {
         return sendResponse(res, noProductError, statusCodes.notFound);

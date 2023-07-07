@@ -21,16 +21,20 @@ export const auth = async (
       process.env.JWT_CODE as string
     ) as jwt.JwtPayload;
 
-    const user = await User.findOne({
-      _id: decoded._id,
-      "tokens.token": token,
-    });
+    const user = await User.findOne(
+      {
+        _id: decoded._id,
+        "tokens.token": token,
+      },
+      "_id"
+    );
 
     if (!user) {
       throw new Error();
     }
     req.body.token = token;
-    req.body.user = user;
+    req.body.user = user._id;
+
     next();
   } catch (e) {
     sendResponse(res, unauthorized, statusCodes.unauthorized);

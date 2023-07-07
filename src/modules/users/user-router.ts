@@ -7,6 +7,7 @@ import {
   updateUser,
   validateUpdates,
   logOut,
+  readProfile,
 } from "./user-controller";
 import { successMsgs, errorMsgs, statusCodes } from "../../constant";
 import { auth, superAdminAuth, adminAuth } from "../../middlware/auth";
@@ -87,8 +88,9 @@ userRouter.post("/logout", auth, async (req: Request, res: Response) => {
 
 userRouter.get("/me", auth, async (req, res) => {
   const { user } = req.body;
-  serverError;
-  sendResponse(res, { data: user }, statusCodes.success);
+  const userProfile = await readProfile(user);
+
+  sendResponse(res, { data: userProfile }, statusCodes.success);
 });
 
 userRouter.patch("/me", auth, async (req, res) => {
@@ -111,7 +113,7 @@ userRouter.patch("/me", auth, async (req, res) => {
 userRouter.delete("/me", auth, async (req, res) => {
   try {
     const { user } = req.body;
-    await deleteUser(user._id);
+    await deleteUser(user);
     sendResponse(res, { data: user }, statusCodes.success);
   } catch (e) {
     sendResponse(res, serverError, statusCodes.badRequest);

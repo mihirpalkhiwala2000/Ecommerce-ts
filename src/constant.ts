@@ -22,6 +22,7 @@ export const errorMsgs = {
   outOfStock: "Product is out of stock",
   invalidFields:
     "Certain input fields cannot be modified. Only name,age, email and password",
+  emptyCart: " Cart is empty",
 };
 export const statusCodes = {
   success: 200,

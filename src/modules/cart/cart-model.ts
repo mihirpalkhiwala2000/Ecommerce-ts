@@ -3,6 +3,7 @@ import { Schema, model } from "mongoose";
 export interface CartProductType {
   productId: Schema.Types.ObjectId;
   quantity: number;
+  price: number;
 }
 
 export interface CartSchemaType {
@@ -25,6 +26,9 @@ const cartSchema = new Schema<CartSchemaType>(
           ref: "Product",
         },
         quantity: {
+          type: Number,
+        },
+        price: {
           type: Number,
         },
       },

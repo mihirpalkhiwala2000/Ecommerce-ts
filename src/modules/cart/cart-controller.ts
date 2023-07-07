@@ -1,38 +1,69 @@
 import Product from "../products/products-model";
 import constant from "../../constant";
 import Cart, { CartSchemaType } from "./cart-model";
-import { UserSchemaType } from "../users/user-models";
+import User, { UserSchemaType } from "../users/user-models";
 import { ObjectId } from "mongoose";
 const { errorMsgs } = constant;
 const { noProductError, outOfStock } = errorMsgs;
 
 export const addToCart = async (
   _id: string,
-  reqUser: UserSchemaType,
+  userData: ObjectId,
   quantity: number
 ): Promise<CartSchemaType | null> => {
-  const product = await Product.findOne({ _id });
+  const product = await Product.findOne({ _id, available: true });
   if (!product) {
     throw new Error(noProductError);
   }
-  if (!product.available) {
-    throw new Error(outOfStock);
-  }
-  const cart = await Cart.findOneAndUpdate(
-    { user: reqUser._id },
+
+  const updatedProductInCart = await Cart.findOneAndUpdate(
     {
-      $push: { products: { productId: product._id, quantity } },
+      user: userData,
+      "products.productId": product._id,
+    },
+    {
+      $set: {
+        "products.$.productId": product._id,
+        "products.$.quantity": quantity,
+      },
     },
     { new: true }
   );
 
-  return cart;
+  if (updatedProductInCart) {
+    return updatedProductInCart;
+  } else {
+    const addedProductToCart = await Cart.findOneAndUpdate(
+      { user: userData },
+      {
+        $push: {
+          products: { productId: product._id, quantity, price: product.price },
+        },
+      },
+      { new: true }
+    );
+    return addedProductToCart;
+  }
 };
 
-export const viewCart = async (userId: ObjectId) => {
+export const viewCart = async (userId: any) => {
   const products = await Cart.findOne({ user: userId });
 
-  return products;
+  const totalValues = await Cart.aggregate([
+    { $match: { user: userId } },
+    { $unwind: { path: "$products" } },
+    {
+      $group: {
+        _id: "$user",
+        totalPrice: {
+          $sum: { $multiply: ["$products.price", "$products.quantity"] },
+        },
+        totalQuantity: { $sum: "$products.quantity" },
+      },
+    },
+  ]);
+
+  return { products, totalValues };
 };
 
 export const deleteProductFromCart = async (id: string, user_Id: string) => {
