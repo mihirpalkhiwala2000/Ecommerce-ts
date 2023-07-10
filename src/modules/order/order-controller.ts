@@ -3,6 +3,7 @@ import constant from "../../constant";
 import { Error, ObjectId } from "mongoose";
 import Cart from "../cart/cart-model";
 import { PaymentEnum, StatusEnum } from "./enums";
+import User from "../users/user-models";
 const { errorMsgs } = constant;
 const { emptyCart } = errorMsgs;
 
@@ -58,7 +59,7 @@ export const orderProcessed = async (
 };
 
 export const displayTotalSales = async () => {
-  const totalValues = await Order.aggregate([
+  const totalSales = await Order.aggregate([
     { $unwind: { path: "$products" } },
     {
       $group: {
@@ -66,7 +67,6 @@ export const displayTotalSales = async () => {
         totalPrice: {
           $sum: { $multiply: ["$products.price", "$products.quantity"] },
         },
-        totalQuantity: { $sum: "$products.quantity" },
       },
     },
     {
@@ -94,9 +94,17 @@ export const displayTotalSales = async () => {
       },
     },
     {
-      $unset: ["_id"],
+      $project: { _id: 0 },
     },
+    { $sort: { totalSale: -1 } },
   ]);
 
-  return totalValues;
+  const totalSellers = await User.aggregate([
+    { $match: { role: 2 } },
+    {
+      $count: "TotalSellers",
+    },
+  ]);
+  const numberOfSellers = totalSellers[0].TotalSellers;
+  return { numberOfSellers, totalSales };
 };
