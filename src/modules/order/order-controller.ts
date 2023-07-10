@@ -97,6 +97,16 @@ export const displayTotalSales = async () => {
       $project: { _id: 0 },
     },
     { $sort: { totalSale: -1 } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "seller",
+        foreignField: "_id",
+        as: "sellerDetails",
+      },
+    },
+    { $set: { sellerName: "$sellerDetails.name" } },
+    { $project: { sellerDetails: 0 } },
   ]);
 
   const totalSellers = await User.aggregate([
